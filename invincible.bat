@@ -21,17 +21,23 @@ goto :stealth
 :retry_msg
 if not defined retryCount set "retryCount=0"
 set /a retryCount+=1
-if !retryCount! gtr 5 goto :retry_limit
-set "msg[0]=English: Please run this script as Administrator. Right-click on the file and select 'Run as administrator'. Thank you for your cooperation! ^<3"
-set "msg[1]=Tiếng Việt: Vui lòng chạy script này với quyền Administrator. Nhấp chuột phải vào file và chọn 'Run as administrator'. Cảm ơn bạn rất nhiều! ^<3"
-set "msg[2]=中文: 请以管理员权限运行此脚本。右键单击文件，然后选择“以管理员身份运行”。感谢您的合作！^<3"
-set "msg[3]=日本語: このスクリプトを管理者として実行してください。ファイルを右クリックし、「管理者として実行」を選択してください。ご協力ありがとうございます！^<3"
-set "msg[4]=한국어: 이 스크립트를 관리자 권한으로 실행하세요. 파일을 마우스 오른쪽 버튼으로 클릭하고 '관리자로 실행'을 선택하세요. 협조해 주셔서 감사합니다! ^<3"
-set "msg[5]=Français: Veuillez exécuter ce script en tant qu'administrateur. Faites un clic droit sur le fichier et sélectionnez « Exécuter en tant qu'administrateur ». Merci de votre coopération ! ^<3"
-set "msg[6]=Deutsch: Bitte führen Sie dieses Skript als Administrator aus. Klicken Sie mit der rechten Maustaste auf die Datei und wählen Sie „Als Administrator ausführen“. Vielen Dank für Ihre Unterstützung! ^<3"
-set "msg[7]=Español: Ejecute este script como administrador. Haga clic derecho en el archivo y seleccione 'Ejecutar como administrador'. ¡Gracias por su cooperación! ^<3"
-set "msg[8]=Русский: Пожалуйста, запустите этот скрипт от имени администратора. Щёлкните правой кнопкой мыши по файлу и выберите «Запуск от имени администратора». Спасибо за сотрудничество! ^<3"
-set "msg[9]=العربية: يرجى تشغيل هذا السكريبت كمسؤول. انقر بزر الماوس الأيمن على الملف واختر 'تشغيل كمسؤول'. شكراً لتعاونك! ^<3"
+if !retryCount! gtr 5 goto :eof
+
+set "msg[0]=English: Please run this script as Administrator. Right-click on the file and select 'Run as administrator'. Thank you for your cooperation! <3"
+set "msg[1]=Tiếng Việt: Vui lòng chạy script này với quyền Administrator. Nhấp chuột phải vào file và chọn 'Run as administrator'. Cảm ơn bạn rất nhiều! <3"
+set "msg[2]=中文: 请以管理员权限运行此脚本。右键单击文件，然后选择“以管理员身份运行”。感谢您的合作！<3"
+set "msg[3]=日本語: このスクリプトを管理者として実行してください。ファイルを右クリックし、「管理者として実行」を選択してください。ご協力ありがとうございます！<3"
+set "msg[4]=한국어: 이 스크립트를 관리자 권한으로 실행하세요. 파일을 마우스 오른쪽 버튼으로 클릭하고 '관리자로 실행'을 선택하세요. 협조해 주셔서 감사합니다! <3"
+set "msg[5]=Français: Veuillez exécuter ce script en tant qu'administrateur. Faites un clic droit sur le fichier et sélectionnez « Exécuter en tant qu'administrateur ». Merci de votre coopération ! <3"
+set "msg[6]=Deutsch: Bitte führen Sie dieses Skript als Administrator aus. Klicken Sie mit der rechten Maustaste auf die Datei und wählen Sie „Als Administrator ausführen“. Vielen Dank für Ihre Unterstützung! <3"
+set "msg[7]=Español: Ejecute este script como administrador. Haga clic derecho en el archivo y seleccione 'Ejecutar como administrador'. ¡Gracias por su cooperación! <3"
+set "msg[8]=Русский: Пожалуйста, запустите этот скрипт от имени администратора. Щёлкните правой кнопкой мыши по файлу и выберите «Запуск от имени администратора». Спасибо за сотрудничество! <3"
+set "msg[9]=العربية: يرجى تشغيل هذا السكريبت كمسؤول. انقر بزر الماوس الأيمن على الملف واختر 'تشغيل كمسؤول'. شكراً لتعاونك! <3"
+
+for /L %%i in (0,1,9) do (
+    echo !msg[%%i]!
+)
+
 :loop
 
 :stealth
