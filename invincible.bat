@@ -53,6 +53,10 @@ echo ===========================================================================
 set /a wait=30*retryCount
 if %wait% lss 1 set /a wait=30
 timeout /t %wait% /nobreak >nul
+net session >nul 2>&1
+if %errorlevel% equ 0 goto :elevated_ok
+set /a retryCount+=1
+if %retryCount% gtr 10 goto :retry_limit
 goto loop
 :retry_limit
 cls
