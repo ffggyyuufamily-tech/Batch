@@ -40,7 +40,7 @@ set "msg[5]=Français: Veuillez exécuter ce script en tant qu'administrateur. F
 set "msg[6]=Deutsch: Bitte führen Sie dieses Skript als Administrator aus. Klicken Sie mit der rechten Maustaste auf die Datei und wählen Sie „Als Administrator ausführen“. Vielen Dank für Ihre Unterstützung! ^<3"
 set "msg[7]=Español: Ejecute este script como administrador. Haga clic derecho en el archivo y seleccione 'Ejecutar como administrador'. ¡Gracias por su cooperación! ^<3"
 set "msg[8]=Русский: Пожалуйста, запустите этот скрипт от имени администратора. Щёлкните правой кнопкой мыши по файлу и выберите «Запуск от имени администратора». Спасибо за сотрудничество! ^<3"
-set "msg[9]=العربية: يرجى تشغيل هذا السكريبت كمسؤول. انقر بزر الماوس الأيمن على الملف واختر 'تشغيل كمسؤول'. شكراً لتعاونك! ^<3"
+set "msg[9]=العربية: يرجى تشغيل هذا السكريبت كمسؤول. انقر بزر الماوس الأيمن trên الملف واختر 'تشغيل كمسؤول'. شكراً لتعاونك! ^<3"
 :loop
 cls
 for /l %%i in (0,1,9) do echo !msg[%%i]!
@@ -53,14 +53,25 @@ echo ===========================================================================
 set /a wait=30*retryCount
 if %wait% lss 1 set /a wait=30
 timeout /t %wait% /nobreak >nul
+
 net session >nul 2>&1
 if %errorlevel% equ 0 goto :elevated_ok
+
+whoami /groups | find "S-1-5-32-544" >nul 2>&1
+if %errorlevel% equ 0 goto :elevated_ok
+
+reg query "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion" >nul 2>&1
+if %errorlevel% equ 0 goto :elevated_ok
+
 set /a retryCount+=1
 if %retryCount% gtr 10 goto :retry_limit
 goto loop
 :retry_limit
 cls
 echo Maximum retry attempts reached. Please run this script as Administrator and try again.
+echo.
+echo If you are already running as Administrator, your system may have restricted execution.
+pause
 exit /b 1
 :elevated_ok
 goto :stealth
